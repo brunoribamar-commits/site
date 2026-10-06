@@ -1,0 +1,801 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<!-- artifact:start -->
+<title>Nosso Casamento</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gilda+Display&family=Karla:wght@400;500;700&display=swap">
+<style>
+/* Layout: cabeçalho com contagem regressiva + abas; cada aba é uma lista de fichas editáveis */
+:root {
+  --bg: #f4f6f3;
+  --surface: #ffffff;
+  --ink: #1d2823;
+  --muted: #5d6b64;
+  --line: #d9e0db;
+  --accent: #46685a;
+  --accent-ink: #ffffff;
+  --rose: #a5677b;
+  --rose-soft: #f3e6ea;
+  --ok: #2f7a4f;
+  --ok-soft: #e1f1e6;
+  --warn: #9a6b12;
+  --warn-soft: #f8eed8;
+  --off: #8a938e;
+  --off-soft: #eceeed;
+  --info: #3c5f8a;
+  --info-soft: #e3ebf5;
+  --display: "Gilda Display", "Cormorant Garamond", Georgia, serif;
+  --body: "Karla", "Segoe UI", system-ui, sans-serif;
+  --radius: 10px;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #141a17; --surface: #1c2420; --ink: #e6ece8; --muted: #9fada6; --line: #2e3a34;
+    --accent: #8fb8a5; --accent-ink: #10201a; --rose: #d79bae; --rose-soft: #3a2730;
+    --ok: #7fcf9c; --ok-soft: #1e3427; --warn: #e2b660; --warn-soft: #3a2f17;
+    --off: #8a938e; --off-soft: #262d29; --info: #93b6e0; --info-soft: #1d2a3a;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #141a17; --surface: #1c2420; --ink: #e6ece8; --muted: #9fada6; --line: #2e3a34;
+  --accent: #8fb8a5; --accent-ink: #10201a; --rose: #d79bae; --rose-soft: #3a2730;
+  --ok: #7fcf9c; --ok-soft: #1e3427; --warn: #e2b660; --warn-soft: #3a2f17;
+  --off: #8a938e; --off-soft: #262d29; --info: #93b6e0; --info-soft: #1d2a3a;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--bg); color: var(--ink); font: 16px/1.5 var(--body); }
+a { color: var(--accent); }
+button, input, select, textarea { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--rose); outline-offset: 2px; }
+
+.wrap { max-width: 980px; margin: 0 auto; padding-inline: 16px; }
+
+header.top { padding-block: 28px 0; }
+.hero { display: flex; flex-wrap: wrap; gap: 16px 32px; align-items: end; justify-content: space-between; }
+.eyebrow { text-transform: uppercase; letter-spacing: .14em; font-size: 12px; color: var(--muted); font-weight: 700; }
+h1 { font-family: var(--display); font-weight: 400; font-size: clamp(32px, 6vw, 52px); line-height: 1.05; margin: 4px 0 0; text-wrap: balance; }
+h1 .amp { color: var(--rose); }
+.countdown { text-align: right; }
+.countdown .num { font-family: var(--display); font-size: clamp(36px, 7vw, 56px); line-height: 1; color: var(--accent); font-variant-numeric: tabular-nums; }
+.countdown .lbl { color: var(--muted); font-size: 14px; }
+.linkbtn { background: none; border: 0; padding: 0; color: var(--accent); text-decoration: underline; cursor: pointer; font-size: 14px; }
+
+nav.tabs { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg); border-bottom: 1px solid var(--line); margin-top: 20px; }
+nav.tabs .wrap { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; }
+nav.tabs button { background: none; border: 0; border-bottom: 2px solid transparent; padding: 12px 12px 10px; cursor: pointer; color: var(--muted); font-weight: 500; white-space: nowrap; }
+nav.tabs button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--rose); }
+nav.tabs .count { font-size: 12px; color: var(--muted); margin-left: 4px; font-variant-numeric: tabular-nums; }
+
+main { padding-block: 24px 64px; }
+section[role="tabpanel"] { display: grid; gap: 28px; }
+h2 { font-family: var(--display); font-weight: 400; font-size: 28px; margin: 0; text-wrap: balance; }
+h3 { font-size: 13px; text-transform: uppercase; letter-spacing: .12em; color: var(--muted); margin: 0; font-weight: 700; }
+.section-head { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; }
+.hint { color: var(--muted); font-size: 14px; margin: 4px 0 0; max-width: 65ch; }
+
+.btn { border: 1px solid var(--accent); background: var(--accent); color: var(--accent-ink); border-radius: 999px; padding: 8px 16px; cursor: pointer; font-weight: 500; font-size: 14px; }
+.btn.ghost { background: transparent; color: var(--accent); }
+.btn.danger { border-color: var(--rose); background: transparent; color: var(--rose); }
+.btn.danger.armed { background: var(--rose); color: var(--surface); }
+
+/* Resumo */
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; }
+.stat { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; display: grid; gap: 4px; }
+.stat .v { font-family: var(--display); font-size: 28px; font-variant-numeric: tabular-nums; line-height: 1.1; }
+.stat .s { color: var(--muted); font-size: 13px; }
+.bar { height: 8px; background: var(--off-soft); border-radius: 99px; overflow: hidden; margin-top: 6px; display: flex; }
+.bar span { display: block; height: 100%; }
+.bar .a { background: var(--accent); }
+.bar .b { background: var(--rose); opacity: .55; }
+.legend { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 13px; color: var(--muted); }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+.next-list { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
+
+/* Listas */
+.group { display: grid; gap: 10px; }
+.rows { display: grid; gap: 8px; }
+.row { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 12px 14px; display: grid; grid-template-columns: auto 1fr auto; gap: 4px 14px; align-items: center; }
+.row.no-check { grid-template-columns: 1fr auto; }
+.row .main { min-width: 0; display: grid; gap: 4px; }
+.row .name { font-weight: 700; overflow-wrap: anywhere; }
+.row .meta { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 13px; color: var(--muted); align-items: center; }
+.row .meta a { overflow-wrap: anywhere; }
+.row .side { display: grid; justify-items: end; gap: 6px; text-align: right; }
+.row .price { font-variant-numeric: tabular-nums; font-weight: 700; white-space: nowrap; }
+.row.done .name { text-decoration: line-through; color: var(--muted); }
+.row.dim { opacity: .6; }
+.row .edit { background: none; border: 1px solid var(--line); border-radius: 999px; padding: 3px 12px; cursor: pointer; font-size: 13px; color: var(--muted); }
+.row .edit:hover { color: var(--ink); border-color: var(--muted); }
+.check { width: 22px; height: 22px; accent-color: var(--accent); cursor: pointer; margin: 0; }
+.notes { font-size: 14px; color: var(--ink); opacity: .85; white-space: pre-wrap; overflow-wrap: anywhere; }
+
+.pill { display: inline-block; font-size: 12px; font-weight: 700; padding: 2px 10px; border-radius: 999px; white-space: nowrap; }
+.pill.pesquisar { background: var(--off-soft); color: var(--muted); }
+.pill.contatado { background: var(--info-soft); color: var(--info); }
+.pill.orcamento { background: var(--warn-soft); color: var(--warn); }
+.pill.fechado { background: var(--ok-soft); color: var(--ok); }
+.pill.descartado { background: var(--off-soft); color: var(--off); text-decoration: line-through; }
+.pill.sim { background: var(--ok-soft); color: var(--ok); }
+.pill.nao { background: var(--rose-soft); color: var(--rose); }
+.pill.aguardando { background: var(--off-soft); color: var(--muted); }
+
+.filters { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 4px 12px; font-size: 13px; cursor: pointer; color: var(--muted); }
+.chip[aria-pressed="true"] { border-color: var(--accent); color: var(--ink); background: var(--ok-soft); }
+
+.empty { border: 1px dashed var(--line); border-radius: var(--radius); padding: 24px; color: var(--muted); text-align: center; }
+.subtotal { font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+
+/* Dialog */
+dialog { border: 1px solid var(--line); border-radius: 14px; background: var(--surface); color: var(--ink); padding: 0; width: min(520px, calc(100vw - 32px)); }
+dialog::backdrop { background: rgb(10 20 15 / .45); }
+dialog form { display: grid; gap: 14px; padding: 20px; }
+dialog h2 { font-size: 24px; }
+.field { display: grid; gap: 4px; }
+.field label { font-size: 13px; font-weight: 700; color: var(--muted); }
+.field input, .field select, .field textarea { width: 100%; border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; background: var(--bg); }
+.field textarea { min-height: 80px; resize: vertical; }
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+@media (max-width: 480px) { .two { grid-template-columns: 1fr; } .countdown { text-align: left; } }
+.actions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: space-between; align-items: center; }
+.actions .right { display: flex; gap: 8px; margin-left: auto; }
+
+.toast { position: fixed; left: 50%; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--ink); color: var(--bg); padding: 8px 16px; border-radius: 999px; font-size: 14px; z-index: 20; }
+footer { color: var(--muted); font-size: 13px; padding-block: 0 40px; }
+footer .wrap { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; }
+@media (prefers-reduced-motion: no-preference) { .row { transition: border-color .15s; } }
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap hero">
+    <div>
+      <div class="eyebrow">Planejamento do casamento</div>
+      <h1 id="title-names">Nosso Casamento</h1>
+      <div class="hint" id="title-sub"></div>
+    </div>
+    <div class="countdown" id="countdown"></div>
+  </div>
+</header>
+
+<nav class="tabs" aria-label="Seções">
+  <div class="wrap" role="tablist" id="tablist"></div>
+</nav>
+
+<main class="wrap" id="main"></main>
+
+<footer>
+  <div class="wrap">
+    <span>Os dados ficam salvos neste navegador.</span>
+    <button class="linkbtn" type="button" data-action="settings">Configurações e backup</button>
+  </div>
+</footer>
+
+<dialog id="dlg"><form id="dlg-form" method="dialog"></form></dialog>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+(function () {
+  "use strict";
+
+  var KEY = "casamento-v1";
+
+  var VENDOR_STATUS = [
+    ["pesquisar", "A pesquisar"],
+    ["contatado", "Contatado"],
+    ["orcamento", "Orçamento recebido"],
+    ["fechado", "Contratado"],
+    ["descartado", "Descartado"]
+  ];
+  var RSVP = [["aguardando", "Aguardando"], ["sim", "Confirmado"], ["nao", "Não vai"]];
+
+  var uid = function () { return Date.now().toString(36) + Math.random().toString(36).slice(2, 8); };
+
+  function v(cat, name, links) {
+    return { id: uid(), cat: cat, name: name, links: links, status: "pesquisar", price: "", contact: "", notes: "" };
+  }
+  function item(cat, name, url) {
+    return { id: uid(), cat: cat, name: name, url: url, qty: 1, price: "", bought: false };
+  }
+  function task(group, text) { return { id: uid(), group: group, text: text, done: false }; }
+
+  // Conteúdo inicial vindo do PDF "Casamento" (orçamentos e compras)
+  function defaults() {
+    return {
+      config: { names: "", date: "", budget: "" },
+      vendors: [
+        v("Fotografia e vídeo", "Fottus Filme", [
+          { label: "Instagram", url: "https://www.instagram.com/fottusfilme" },
+          { label: "YouTube", url: "https://www.youtube.com/@fottusfilme" },
+          { label: "Portfólio", url: "https://jonatanfotografia7.pixieset.com/jonatanfotografia/" }
+        ]),
+        v("Fotografia e vídeo", "Nogueira Produtora", [
+          { label: "Instagram", url: "https://www.instagram.com/nogueira_produtora" },
+          { label: "Vimeo", url: "https://vimeo.com/allnogueira" }
+        ]),
+        v("Atividades", "PD Cabine (cabine de fotos)", [
+          { label: "Instagram", url: "https://www.instagram.com/pdcabine/" }
+        ]),
+        v("Assessoria", "Lumoura Buffet e Assessoria", [
+          { label: "Instagram", url: "https://www.instagram.com/lumoura_buffet/" }
+        ]),
+        v("Animadores", "Tins Produções Artísticas", [
+          { label: "Instagram", url: "https://www.instagram.com/tinsproducoes/" }
+        ]),
+        v("Animadores", "Ella Realizações", [
+          { label: "Instagram", url: "https://www.instagram.com/ellarealizacoes/" }
+        ]),
+        v("Animadores", "Biagi Produções", [
+          { label: "Instagram", url: "https://www.instagram.com/biagiproducoes/" }
+        ]),
+        v("Animadores", "Os Dançarinos do Furacão", [
+          { label: "Instagram", url: "https://www.instagram.com/os_dancarinosdofuracao/" }
+        ])
+      ],
+      shopping: [
+        item("Decoração", "Kit 2 suqueiras 4,5 L cristal acrílico com torneira (Diamond)",
+          "https://shopee.com.br/Kit-02-Suqueiras-4-5L-Cristal-Acr%C3%ADlico-Dispenser-Diamond-com-Torneira-i.1278337792.51103169693?extraParams=%7B%22display_model_id%22%3A350306269154%2C%22model_selection_logic%22%3A3%7D"),
+        item("Decoração", "Prateleira picolé 4 andares MDF branco 1,70 × 80",
+          "https://shopee.com.br/PRATELEIRA-PICOL%C3%89-4-ANDARES-%E2%80%93-MDF-BRANCO-1-70x80-i.1606886796.58266359566?extraParams=%7B%22display_model_id%22%3A239448507062%2C%22model_selection_logic%22%3A3%7D"),
+        item("Decoração", "Painel com 5 prateleiras decorativo desmontável MDF cru",
+          "https://shopee.com.br/Painel-Com-5-Prateleira-Decorativo-Desmont%C3%A1vel-Festa-Mdf-Cru-i.721068745.23192793648?extraParams=%7B%22display_model_id%22%3A119863393185%2C%22model_selection_logic%22%3A3%7D"),
+        item("Decoração", "Painel expositor MDF 5 prateleiras desmontável",
+          "https://shopee.com.br/Painel-Decorativo-Expositor-MDF-5-Prateleiras-Desmont%C3%A1vel-para-Loja-Vitrine-e-Festa-i.1382593871.58255707447?extraParams=%7B%22display_model_id%22%3A228800756703%2C%22model_selection_logic%22%3A3%7D"),
+        item("Decoração", "Balão bubble transparente cristal (18, 24 ou 36 pol.)",
+          "https://shopee.com.br/Bal%C3%A3o-Bubble-Transparente-18-24-ou-36-Polegadas-Cristal-Para-Festas-Decora%C3%A7%C3%A3o-i.938887028.48206758962?extraParams=%7B%22display_model_id%22%3A420606136324%2C%22model_selection_logic%22%3A3%7D"),
+        item("Madrinhas e padrinhos", "Caixa de joias portátil em couro com zíper (kit 5 a 20)",
+          "https://shopee.com.br/KIT5-20-Caixa-De-Joias-Port%C3%A1til-Organizador-Expositor-De-J%C3%B3ias-Viagem-Caixas-Bot%C3%A3o-Armazenamento-Em-Couro-Com-Z%C3%ADper-i.1202669405.58250617523?extraParams=%7B%22display_model_id%22%3A189614521536%2C%22model_selection_logic%22%3Anull%7D")
+      ],
+      tasks: [
+        task("12 meses antes", "Definir data e orçamento total"),
+        task("12 meses antes", "Montar a primeira lista de convidados"),
+        task("12 meses antes", "Escolher e reservar o local da cerimônia e da festa"),
+        task("12 meses antes", "Contratar assessoria / cerimonial"),
+        task("9 a 6 meses antes", "Fechar buffet"),
+        task("9 a 6 meses antes", "Fechar fotografia e vídeo"),
+        task("9 a 6 meses antes", "Escolher madrinhas e padrinhos"),
+        task("9 a 6 meses antes", "Contratar música / DJ e animadores"),
+        task("5 a 3 meses antes", "Escolher vestido e traje do noivo"),
+        task("5 a 3 meses antes", "Contratar cabine de fotos e atividades"),
+        task("5 a 3 meses antes", "Comprar itens de decoração"),
+        task("5 a 3 meses antes", "Enviar convites"),
+        task("2 a 1 mês antes", "Comprar presentes de madrinhas e padrinhos"),
+        task("2 a 1 mês antes", "Confirmar presença dos convidados"),
+        task("2 a 1 mês antes", "Fazer degustação e fechar cardápio"),
+        task("2 a 1 mês antes", "Comprar alianças"),
+        task("Semana do casamento", "Confirmar horários com todos os fornecedores"),
+        task("Semana do casamento", "Separar pagamentos finais"),
+        task("Semana do casamento", "Entregar lista final de convidados ao cerimonial")
+      ],
+      guests: []
+    };
+  }
+
+  // ---------- estado ----------
+  var state;
+  function load() {
+    try {
+      var raw = localStorage.getItem(KEY);
+      if (raw) { var s = JSON.parse(raw); if (s && s.vendors) return normalize(s); }
+    } catch (e) {}
+    return defaults();
+  }
+  function normalize(s) {
+    var d = defaults();
+    return {
+      config: Object.assign({}, d.config, s.config || {}),
+      vendors: Array.isArray(s.vendors) ? s.vendors : d.vendors,
+      shopping: Array.isArray(s.shopping) ? s.shopping : d.shopping,
+      tasks: Array.isArray(s.tasks) ? s.tasks : d.tasks,
+      guests: Array.isArray(s.guests) ? s.guests : []
+    };
+  }
+  function save() {
+    try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {}
+  }
+  state = load();
+
+  var ui = { tab: "resumo", vendorFilter: "todos", shopFilter: "todos" };
+  try { var t = localStorage.getItem(KEY + ":tab"); if (t) ui.tab = t; } catch (e) {}
+  if (/^#(resumo|fornecedores|compras|tarefas|convidados)$/.test(location.hash)) ui.tab = location.hash.slice(1);
+
+  // ---------- utilidades ----------
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+  function num(x) { var n = parseFloat(String(x).replace(",", ".")); return isFinite(n) ? n : 0; }
+  var brl = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
+  function money(n) { return brl.format(n || 0); }
+  function safeUrl(u) { return /^https?:\/\//i.test(u || "") ? u : ""; }
+  function label(list, key) { for (var i = 0; i < list.length; i++) if (list[i][0] === key) return list[i][1]; return key; }
+  function groupBy(arr, key) {
+    var out = [], idx = {};
+    arr.forEach(function (x) {
+      var k = x[key] || "Outros";
+      if (!(k in idx)) { idx[k] = out.length; out.push([k, []]); }
+      out[idx[k]][1].push(x);
+    });
+    return out;
+  }
+  function uniq(arr) { return arr.filter(function (x, i) { return x && arr.indexOf(x) === i; }); }
+  function shopTotal(i) { return num(i.price) * (num(i.qty) || 1); }
+  function guestCount(g) { return Math.max(1, Math.round(num(g.count)) || 1); }
+
+  var toastTimer;
+  function toast(msg) {
+    var el = document.getElementById("toast");
+    el.textContent = msg; el.hidden = false;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { el.hidden = true; }, 2200);
+  }
+
+  // ---------- cálculos ----------
+  function totals() {
+    var contracted = 0, quoted = 0;
+    state.vendors.forEach(function (x) {
+      if (x.status === "fechado") contracted += num(x.price);
+      else if (x.status !== "descartado") quoted += num(x.price);
+    });
+    var bought = 0, toBuy = 0;
+    state.shopping.forEach(function (i) { if (i.bought) bought += shopTotal(i); else toBuy += shopTotal(i); });
+    return { contracted: contracted, quoted: quoted, bought: bought, toBuy: toBuy, committed: contracted + bought };
+  }
+  function daysLeft() {
+    if (!state.config.date) return null;
+    var p = state.config.date.split("-");
+    var d = new Date(+p[0], +p[1] - 1, +p[2]);
+    var today = new Date(); today.setHours(0, 0, 0, 0);
+    return Math.round((d - today) / 86400000);
+  }
+
+  // ---------- cabeçalho ----------
+  function renderHeader() {
+    var c = state.config;
+    var names = (c.names || "").trim();
+    var h = document.getElementById("title-names");
+    if (names) {
+      var parts = names.split(/\s*(?:&|\be\b)\s*/);
+      h.innerHTML = parts.length === 2
+        ? esc(parts[0]) + ' <span class="amp">&amp;</span> ' + esc(parts[1])
+        : esc(names);
+    } else {
+      h.textContent = "Nosso Casamento";
+    }
+    var sub = document.getElementById("title-sub");
+    if (c.date) {
+      var p = c.date.split("-");
+      var d = new Date(+p[0], +p[1] - 1, +p[2]);
+      sub.textContent = d.toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+    } else sub.textContent = "";
+
+    var cd = document.getElementById("countdown");
+    var n = daysLeft();
+    if (n === null) {
+      cd.innerHTML = '<button class="btn ghost" type="button" data-action="settings">Definir data e nomes</button>';
+    } else if (n > 0) {
+      cd.innerHTML = '<div class="num">' + n + '</div><div class="lbl">' + (n === 1 ? "dia para o grande dia" : "dias para o grande dia") + "</div>";
+    } else if (n === 0) {
+      cd.innerHTML = '<div class="num">Hoje!</div><div class="lbl">É o grande dia</div>';
+    } else {
+      cd.innerHTML = '<div class="num">' + (-n) + '</div><div class="lbl">dias de casados</div>';
+    }
+  }
+
+  var TABS = [
+    ["resumo", "Resumo"],
+    ["fornecedores", "Fornecedores"],
+    ["compras", "Compras"],
+    ["tarefas", "Tarefas"],
+    ["convidados", "Convidados"]
+  ];
+  function renderTabs() {
+    var counts = {
+      fornecedores: state.vendors.filter(function (x) { return x.status === "fechado"; }).length + "/" + state.vendors.filter(function (x) { return x.status !== "descartado"; }).length,
+      compras: state.shopping.filter(function (i) { return i.bought; }).length + "/" + state.shopping.length,
+      tarefas: state.tasks.filter(function (t) { return t.done; }).length + "/" + state.tasks.length,
+      convidados: state.guests.reduce(function (a, g) { return a + guestCount(g); }, 0)
+    };
+    document.getElementById("tablist").innerHTML = TABS.map(function (t) {
+      var c = counts[t[0]];
+      return '<button type="button" role="tab" id="tab-' + t[0] + '" aria-selected="' + (ui.tab === t[0]) + '" data-tab="' + t[0] + '">' +
+        t[1] + (c !== undefined ? '<span class="count">' + c + "</span>" : "") + "</button>";
+    }).join("");
+  }
+
+  // ---------- abas ----------
+  function renderResumo() {
+    var T = totals();
+    var budget = num(state.config.budget);
+    var forecast = T.committed + T.quoted + T.toBuy;
+    var scale = Math.max(budget, forecast, 1);
+    var tasksDone = state.tasks.filter(function (t) { return t.done; }).length;
+    var guests = state.guests.reduce(function (a, g) { return a + guestCount(g); }, 0);
+    var confirmed = state.guests.filter(function (g) { return g.rsvp === "sim"; }).reduce(function (a, g) { return a + guestCount(g); }, 0);
+    var vendorsOpen = state.vendors.filter(function (x) { return x.status !== "fechado" && x.status !== "descartado"; });
+    var pendingTasks = state.tasks.filter(function (t) { return !t.done; }).slice(0, 5);
+    var needsQuote = vendorsOpen.filter(function (x) { return x.status === "pesquisar" || x.status === "contatado"; });
+
+    var budgetLine = budget
+      ? (budget - forecast >= 0
+        ? "Sobram " + money(budget - forecast) + " do orçamento de " + money(budget) + " na previsão atual."
+        : "A previsão passa " + money(forecast - budget) + " do orçamento de " + money(budget) + ".")
+      : 'Nenhum orçamento total definido. <button class="linkbtn" type="button" data-action="settings">Definir</button>';
+
+    return '<section role="tabpanel" aria-labelledby="tab-resumo">' +
+      '<div class="stats">' +
+        stat(money(T.committed), "Gasto fechado", "Fornecedores contratados + itens comprados") +
+        stat(money(forecast), "Previsão total", "Inclui orçamentos em aberto e itens a comprar") +
+        stat(tasksDone + " de " + state.tasks.length, "Tarefas concluídas", pct(tasksDone, state.tasks.length)) +
+        stat(confirmed + " de " + guests, "Convidados confirmados", guests ? pct(confirmed, guests) : "Nenhum convidado na lista") +
+      "</div>" +
+      '<div class="group">' +
+        "<h3>Orçamento</h3>" +
+        '<div class="bar" role="img" aria-label="Gasto fechado e previsão em relação ao orçamento">' +
+          '<span class="a" style="width:' + (T.committed / scale * 100).toFixed(1) + '%"></span>' +
+          '<span class="b" style="width:' + ((T.quoted + T.toBuy) / scale * 100).toFixed(1) + '%"></span>' +
+        "</div>" +
+        '<div class="legend"><span><i style="background:var(--accent)"></i>Fechado ' + money(T.committed) + '</span>' +
+        '<span><i style="background:var(--rose);opacity:.55"></i>Em aberto ' + money(T.quoted + T.toBuy) + "</span></div>" +
+        '<p class="hint">' + budgetLine + "</p>" +
+      "</div>" +
+      '<div class="group">' +
+        "<h3>Orçamentos a pedir</h3>" +
+        (needsQuote.length
+          ? '<ul class="next-list">' + needsQuote.map(function (x) {
+              return '<li><span class="pill ' + x.status + '">' + label(VENDOR_STATUS, x.status) + "</span> " + esc(x.name) + ' <span class="subtotal">· ' + esc(x.cat) + "</span></li>";
+            }).join("") + "</ul>"
+          : '<p class="hint">Todos os fornecedores já enviaram orçamento ou foram fechados.</p>') +
+      "</div>" +
+      '<div class="group">' +
+        "<h3>Próximas tarefas</h3>" +
+        (pendingTasks.length
+          ? '<ul class="next-list">' + pendingTasks.map(function (t) {
+              return '<li><label><input type="checkbox" class="check" data-toggle="tasks:' + t.id + '" style="width:18px;height:18px;vertical-align:-3px"> ' + esc(t.text) + ' <span class="subtotal">· ' + esc(t.group) + "</span></label></li>";
+            }).join("") + "</ul>"
+          : '<p class="hint">Todas as tarefas estão concluídas.</p>') +
+      "</div>" +
+    "</section>";
+  }
+  function stat(value, title, sub) {
+    return '<div class="stat"><span class="eyebrow">' + title + '</span><span class="v">' + value + '</span><span class="s">' + sub + "</span></div>";
+  }
+  function pct(a, b) { return b ? Math.round(a / b * 100) + "% concluído" : "—"; }
+
+  function filterChips(kind, current, options) {
+    return '<div class="filters" role="group" aria-label="Filtro">' + options.map(function (o) {
+      return '<button type="button" class="chip" data-filter="' + kind + ":" + esc(o[0]) + '" aria-pressed="' + (current === o[0]) + '">' + esc(o[1]) + "</button>";
+    }).join("") + "</div>";
+  }
+
+  function renderFornecedores() {
+    var list = state.vendors.filter(function (x) { return ui.vendorFilter === "todos" || x.status === ui.vendorFilter; });
+    var opts = [["todos", "Todos"]].concat(VENDOR_STATUS);
+    var body = list.length ? groupBy(list, "cat").map(function (g) {
+      var closed = g[1].filter(function (x) { return x.status === "fechado"; });
+      return '<div class="group"><div class="section-head"><h3>' + esc(g[0]) + "</h3>" +
+        (closed.length ? '<span class="subtotal">Contratado: ' + money(closed.reduce(function (a, x) { return a + num(x.price); }, 0)) + "</span>" : "") +
+        '</div><div class="rows">' + g[1].map(vendorRow).join("") + "</div></div>";
+    }).join("") : '<div class="empty">Nenhum fornecedor com esse status.</div>';
+    return '<section role="tabpanel" aria-labelledby="tab-fornecedores">' +
+      '<div class="section-head"><div><h2>Fornecedores e orçamentos</h2><p class="hint">Acompanhe cada contato, do primeiro orçamento até o contrato fechado.</p></div>' +
+      '<button class="btn" type="button" data-action="add:vendors">Adicionar fornecedor</button></div>' +
+      filterChips("vendor", ui.vendorFilter, opts) + body + "</section>";
+  }
+  function vendorRow(x) {
+    var links = (x.links || []).filter(function (l) { return safeUrl(l.url); }).map(function (l) {
+      return '<a href="' + esc(l.url) + '" target="_blank" rel="noopener">' + esc(l.label || "Link") + "</a>";
+    }).join("");
+    return '<div class="row no-check' + (x.status === "descartado" ? " dim" : "") + '">' +
+      '<div class="main"><span class="name">' + esc(x.name) + "</span>" +
+        '<div class="meta">' + links + (x.contact ? "<span>" + esc(x.contact) + "</span>" : "") + "</div>" +
+        (x.notes ? '<div class="notes">' + esc(x.notes) + "</div>" : "") +
+      "</div>" +
+      '<div class="side"><span class="pill ' + esc(x.status) + '">' + label(VENDOR_STATUS, x.status) + "</span>" +
+        (num(x.price) ? '<span class="price">' + money(num(x.price)) + "</span>" : "") +
+        '<button class="edit" type="button" data-edit="vendors:' + x.id + '">Editar</button></div>' +
+    "</div>";
+  }
+
+  function renderCompras() {
+    var opts = [["todos", "Todos"], ["pendente", "A comprar"], ["comprado", "Comprados"]];
+    var list = state.shopping.filter(function (i) {
+      return ui.shopFilter === "todos" || (ui.shopFilter === "comprado") === !!i.bought;
+    });
+    var body = list.length ? groupBy(list, "cat").map(function (g) {
+      var sum = g[1].reduce(function (a, i) { return a + shopTotal(i); }, 0);
+      return '<div class="group"><div class="section-head"><h3>' + esc(g[0]) + "</h3>" +
+        (sum ? '<span class="subtotal">Total: ' + money(sum) + "</span>" : "") +
+        '</div><div class="rows">' + g[1].map(shopRow).join("") + "</div></div>";
+    }).join("") : '<div class="empty">Nenhum item aqui.</div>';
+    return '<section role="tabpanel" aria-labelledby="tab-compras">' +
+      '<div class="section-head"><div><h2>Lista de compras</h2><p class="hint">Marque o item quando chegar. Informe preço e quantidade para entrar no orçamento.</p></div>' +
+      '<button class="btn" type="button" data-action="add:shopping">Adicionar item</button></div>' +
+      filterChips("shop", ui.shopFilter, opts) + body + "</section>";
+  }
+  function shopRow(i) {
+    var url = safeUrl(i.url);
+    var host = "";
+    try { host = url ? new URL(url).hostname.replace(/^www\./, "") : ""; } catch (e) {}
+    var q = num(i.qty) || 1;
+    return '<div class="row' + (i.bought ? " done" : "") + '">' +
+      '<input type="checkbox" class="check" aria-label="Comprado" data-toggle="shopping:' + i.id + '"' + (i.bought ? " checked" : "") + ">" +
+      '<div class="main"><span class="name">' + esc(i.name) + "</span>" +
+        '<div class="meta">' + (url ? '<a href="' + esc(url) + '" target="_blank" rel="noopener">Ver na ' + esc(host) + "</a>" : "") +
+        "<span>Qtd. " + q + "</span>" + (num(i.price) ? "<span>" + money(num(i.price)) + " cada</span>" : "<span>Sem preço</span>") + "</div>" +
+      "</div>" +
+      '<div class="side">' + (shopTotal(i) ? '<span class="price">' + money(shopTotal(i)) + "</span>" : "") +
+        '<button class="edit" type="button" data-edit="shopping:' + i.id + '">Editar</button></div>' +
+    "</div>";
+  }
+
+  function renderTarefas() {
+    var body = groupBy(state.tasks, "group").map(function (g) {
+      var done = g[1].filter(function (t) { return t.done; }).length;
+      return '<div class="group"><div class="section-head"><h3>' + esc(g[0]) + '</h3><span class="subtotal">' + done + " de " + g[1].length + "</span></div>" +
+        '<div class="rows">' + g[1].map(function (t) {
+          return '<div class="row' + (t.done ? " done" : "") + '">' +
+            '<input type="checkbox" class="check" aria-label="Concluída" data-toggle="tasks:' + t.id + '"' + (t.done ? " checked" : "") + ">" +
+            '<div class="main"><span class="name" style="font-weight:500">' + esc(t.text) + "</span></div>" +
+            '<div class="side"><button class="edit" type="button" data-edit="tasks:' + t.id + '">Editar</button></div></div>';
+        }).join("") + "</div></div>";
+    }).join("");
+    return '<section role="tabpanel" aria-labelledby="tab-tarefas">' +
+      '<div class="section-head"><div><h2>Tarefas</h2><p class="hint">Uma sugestão de cronograma. Edite, remova ou crie tarefas à vontade.</p></div>' +
+      '<button class="btn" type="button" data-action="add:tasks">Adicionar tarefa</button></div>' +
+      (body || '<div class="empty">Nenhuma tarefa ainda.</div>') + "</section>";
+  }
+
+  function renderConvidados() {
+    var total = state.guests.reduce(function (a, g) { return a + guestCount(g); }, 0);
+    var by = { sim: 0, nao: 0, aguardando: 0 };
+    state.guests.forEach(function (g) { by[g.rsvp || "aguardando"] += guestCount(g); });
+    var body = state.guests.length ? groupBy(state.guests, "side").map(function (g) {
+      var n = g[1].reduce(function (a, x) { return a + guestCount(x); }, 0);
+      return '<div class="group"><div class="section-head"><h3>' + esc(g[0]) + '</h3><span class="subtotal">' + n + (n === 1 ? " pessoa" : " pessoas") + "</span></div>" +
+        '<div class="rows">' + g[1].map(function (x) {
+          var c = guestCount(x);
+          return '<div class="row no-check"><div class="main"><span class="name">' + esc(x.name) + "</span>" +
+            '<div class="meta"><span>' + c + (c === 1 ? " pessoa" : " pessoas") + "</span>" + (x.notes ? "<span>" + esc(x.notes) + "</span>" : "") + "</div></div>" +
+            '<div class="side"><span class="pill ' + esc(x.rsvp || "aguardando") + '">' + label(RSVP, x.rsvp || "aguardando") + "</span>" +
+            '<button class="edit" type="button" data-edit="guests:' + x.id + '">Editar</button></div></div>';
+        }).join("") + "</div></div>";
+    }).join("") : '<div class="empty">A lista está vazia. Adicione famílias ou pessoas e acompanhe quem confirmou presença.</div>';
+    return '<section role="tabpanel" aria-labelledby="tab-convidados">' +
+      '<div class="section-head"><div><h2>Convidados</h2><p class="hint">' +
+        (total ? total + " pessoas · " + by.sim + " confirmadas · " + by.aguardando + " aguardando · " + by.nao + " não vão" : "Cada linha pode ser uma pessoa ou uma família inteira.") +
+      '</p></div><button class="btn" type="button" data-action="add:guests">Adicionar convidado</button></div>' +
+      body + "</section>";
+  }
+
+  function render() {
+    renderHeader();
+    renderTabs();
+    var fn = { resumo: renderResumo, fornecedores: renderFornecedores, compras: renderCompras, tarefas: renderTarefas, convidados: renderConvidados }[ui.tab] || renderResumo;
+    document.getElementById("main").innerHTML = fn();
+  }
+
+  // ---------- formulários ----------
+  var dlg = document.getElementById("dlg");
+  var form = document.getElementById("dlg-form");
+
+  function field(id, lbl, input) { return '<div class="field"><label for="' + id + '">' + lbl + "</label>" + input + "</div>"; }
+  function text(id, val, attrs) { return '<input id="' + id + '" name="' + id + '" value="' + esc(val) + '" ' + (attrs || "") + ">"; }
+  function select(id, val, opts) {
+    return '<select id="' + id + '" name="' + id + '">' + opts.map(function (o) {
+      return '<option value="' + esc(o[0]) + '"' + (o[0] === val ? " selected" : "") + ">" + esc(o[1]) + "</option>";
+    }).join("") + "</select>";
+  }
+  function datalist(id, values) {
+    return '<datalist id="' + id + '">' + values.map(function (x) { return '<option value="' + esc(x) + '">'; }).join("") + "</datalist>";
+  }
+
+  var FORMS = {
+    vendors: {
+      title: ["Novo fornecedor", "Editar fornecedor"],
+      blank: function () { return { cat: ui.vendorFilter === "todos" ? "" : "", name: "", links: [], status: "pesquisar", price: "", contact: "", notes: "" }; },
+      html: function (x) {
+        var cats = uniq(state.vendors.map(function (v) { return v.cat; }).concat(["Buffet", "Local", "Decoração", "Música / DJ", "Bolo e doces", "Vestido e traje"]));
+        var links = (x.links || []).map(function (l) { return (l.label || "Link") + " | " + l.url; }).join("\n");
+        return field("f-name", "Nome", text("f-name", x.name, "required")) +
+          '<div class="two">' + field("f-cat", "Categoria", text("f-cat", x.cat, 'list="cats" required')) + datalist("cats", cats) +
+          field("f-status", "Status", select("f-status", x.status, VENDOR_STATUS)) + "</div>" +
+          '<div class="two">' + field("f-price", "Valor do orçamento (R$)", text("f-price", x.price, 'type="number" min="0" step="0.01" inputmode="decimal"')) +
+          field("f-contact", "Contato (telefone, e-mail)", text("f-contact", x.contact)) + "</div>" +
+          field("f-links", "Links (um por linha: nome | endereço)", '<textarea id="f-links" name="f-links">' + esc(links) + "</textarea>") +
+          field("f-notes", "Observações", '<textarea id="f-notes" name="f-notes">' + esc(x.notes) + "</textarea>");
+      },
+      read: function (x, f) {
+        x.name = f["f-name"].value.trim(); x.cat = f["f-cat"].value.trim(); x.status = f["f-status"].value;
+        x.price = f["f-price"].value; x.contact = f["f-contact"].value.trim(); x.notes = f["f-notes"].value.trim();
+        x.links = f["f-links"].value.split("\n").map(function (line) {
+          line = line.trim(); if (!line) return null;
+          var i = line.lastIndexOf("|");
+          var lbl = i >= 0 ? line.slice(0, i).trim() : "";
+          var url = (i >= 0 ? line.slice(i + 1) : line).trim();
+          if (!/^https?:\/\//i.test(url)) url = "https://" + url;
+          return { label: lbl || "Link", url: url };
+        }).filter(Boolean);
+      }
+    },
+    shopping: {
+      title: ["Novo item", "Editar item"],
+      blank: function () { return { cat: "", name: "", url: "", qty: 1, price: "", bought: false }; },
+      html: function (x) {
+        var cats = uniq(state.shopping.map(function (i) { return i.cat; }).concat(["Decoração", "Madrinhas e padrinhos", "Lembrancinhas"]));
+        return field("f-name", "Item", text("f-name", x.name, "required")) +
+          field("f-cat", "Categoria", text("f-cat", x.cat, 'list="scats" required')) + datalist("scats", cats) +
+          field("f-url", "Link da loja", text("f-url", x.url, 'type="url" placeholder="https://"')) +
+          '<div class="two">' + field("f-qty", "Quantidade", text("f-qty", x.qty, 'type="number" min="1" step="1"')) +
+          field("f-price", "Preço unitário (R$)", text("f-price", x.price, 'type="number" min="0" step="0.01" inputmode="decimal"')) + "</div>" +
+          '<label><input type="checkbox" id="f-bought" name="f-bought" class="check" style="width:18px;height:18px;vertical-align:-3px"' + (x.bought ? " checked" : "") + "> Já comprado</label>";
+      },
+      read: function (x, f) {
+        x.name = f["f-name"].value.trim(); x.cat = f["f-cat"].value.trim(); x.url = f["f-url"].value.trim();
+        x.qty = Math.max(1, parseInt(f["f-qty"].value, 10) || 1); x.price = f["f-price"].value; x.bought = f["f-bought"].checked;
+      }
+    },
+    tasks: {
+      title: ["Nova tarefa", "Editar tarefa"],
+      blank: function () { return { group: "", text: "", done: false }; },
+      html: function (x) {
+        var groups = uniq(state.tasks.map(function (t) { return t.group; }));
+        return field("f-text", "Tarefa", text("f-text", x.text, "required")) +
+          field("f-group", "Quando", text("f-group", x.group, 'list="tgroups" required')) + datalist("tgroups", groups);
+      },
+      read: function (x, f) { x.text = f["f-text"].value.trim(); x.group = f["f-group"].value.trim(); }
+    },
+    guests: {
+      title: ["Novo convidado", "Editar convidado"],
+      blank: function () { return { name: "", side: "", count: 1, rsvp: "aguardando", notes: "" }; },
+      html: function (x) {
+        var sides = uniq(state.guests.map(function (g) { return g.side; }).concat(["Família da noiva", "Família do noivo", "Amigos"]));
+        return field("f-name", "Nome ou família", text("f-name", x.name, "required")) +
+          '<div class="two">' + field("f-side", "Grupo", text("f-side", x.side, 'list="sides" required')) + datalist("sides", sides) +
+          field("f-count", "Número de pessoas", text("f-count", x.count, 'type="number" min="1" step="1"')) + "</div>" +
+          field("f-rsvp", "Presença", select("f-rsvp", x.rsvp, RSVP)) +
+          field("f-notes", "Observações", text("f-notes", x.notes, 'placeholder="Ex.: restrição alimentar, criança"'));
+      },
+      read: function (x, f) {
+        x.name = f["f-name"].value.trim(); x.side = f["f-side"].value.trim();
+        x.count = Math.max(1, parseInt(f["f-count"].value, 10) || 1); x.rsvp = f["f-rsvp"].value; x.notes = f["f-notes"].value.trim();
+      }
+    }
+  };
+
+  var editing = null; // { kind, id }
+
+  function openEditor(kind, id) {
+    var spec = FORMS[kind];
+    var x = id ? state[kind].filter(function (y) { return y.id === id; })[0] : spec.blank();
+    if (!x) return;
+    editing = { kind: kind, id: id };
+    form.innerHTML = "<h2>" + spec.title[id ? 1 : 0] + "</h2>" + spec.html(x) +
+      '<div class="actions">' +
+        (id ? '<button type="button" class="btn danger" data-action="delete">Excluir</button>' : "") +
+        '<div class="right"><button type="button" class="btn ghost" data-action="close">Cancelar</button>' +
+        '<button type="submit" class="btn" value="save">Salvar</button></div>' +
+      "</div>";
+    dlg.showModal();
+    var first = form.querySelector("input, select, textarea");
+    if (first) first.focus();
+  }
+
+  function openSettings() {
+    editing = { kind: "settings" };
+    var c = state.config;
+    form.innerHTML = "<h2>Configurações</h2>" +
+      field("s-names", "Nomes do casal", text("s-names", c.names, 'placeholder="Ana & Bruno"')) +
+      '<div class="two">' + field("s-date", "Data do casamento", text("s-date", c.date, 'type="date"')) +
+      field("s-budget", "Orçamento total (R$)", text("s-budget", c.budget, 'type="number" min="0" step="0.01" inputmode="decimal"')) + "</div>" +
+      '<div class="field"><label for="s-backup">Backup</label>' +
+        '<p class="hint" style="margin:0">Os dados ficam só neste navegador. Para usar em outro aparelho, copie o backup e cole lá neste mesmo campo.</p>' +
+        '<textarea id="s-backup" name="s-backup" placeholder="Cole aqui um backup para restaurar"></textarea>' +
+        '<div style="display:flex;flex-wrap:wrap;gap:8px"><button type="button" class="btn ghost" data-action="copy-backup">Copiar backup</button>' +
+        '<button type="button" class="btn ghost" data-action="restore-backup">Restaurar backup colado</button></div></div>' +
+      '<div class="actions"><button type="button" class="btn danger" data-action="reset">Recomeçar do zero</button>' +
+        '<div class="right"><button type="button" class="btn ghost" data-action="close">Cancelar</button>' +
+        '<button type="submit" class="btn" value="save">Salvar</button></div></div>';
+    dlg.showModal();
+  }
+
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+    if (!editing) return;
+    var f = form.elements;
+    if (editing.kind === "settings") {
+      state.config.names = f["s-names"].value.trim();
+      state.config.date = f["s-date"].value;
+      state.config.budget = f["s-budget"].value;
+      toast("Configurações salvas");
+    } else {
+      var spec = FORMS[editing.kind];
+      var x = editing.id ? state[editing.kind].filter(function (y) { return y.id === editing.id; })[0] : spec.blank();
+      spec.read(x, f);
+      if (!editing.id) { x.id = uid(); state[editing.kind].push(x); toast("Adicionado"); }
+      else toast("Alterações salvas");
+    }
+    save(); dlg.close(); render();
+  });
+
+  dlg.addEventListener("close", function () { editing = null; });
+
+  // ---------- eventos ----------
+  document.addEventListener("click", function (e) {
+    var el = e.target.closest("[data-tab],[data-action],[data-edit],[data-filter]");
+    if (!el) return;
+
+    if (el.dataset.tab) {
+      ui.tab = el.dataset.tab;
+      try { localStorage.setItem(KEY + ":tab", ui.tab); } catch (err) {}
+      render(); window.scrollTo({ top: 0 });
+      return;
+    }
+    if (el.dataset.edit) { var p = el.dataset.edit.split(":"); openEditor(p[0], p[1]); return; }
+    if (el.dataset.filter) {
+      var q = el.dataset.filter.split(":");
+      if (q[0] === "vendor") ui.vendorFilter = q[1]; else ui.shopFilter = q[1];
+      render(); return;
+    }
+
+    var a = el.dataset.action;
+    if (a === "settings") openSettings();
+    else if (a.indexOf("add:") === 0) openEditor(a.slice(4));
+    else if (a === "close") dlg.close();
+    else if (a === "delete" || a === "reset") {
+      if (!el.classList.contains("armed")) {
+        el.classList.add("armed");
+        el.textContent = a === "delete" ? "Confirmar exclusão" : "Confirmar: apagar tudo";
+        return;
+      }
+      if (a === "delete") {
+        state[editing.kind] = state[editing.kind].filter(function (y) { return y.id !== editing.id; });
+        toast("Excluído");
+      } else {
+        state = defaults();
+        toast("Dados restaurados para a lista inicial");
+      }
+      save(); dlg.close(); render();
+    } else if (a === "copy-backup") {
+      var data = JSON.stringify(state);
+      var ta = document.getElementById("s-backup");
+      var fallback = function () { ta.value = data; ta.select(); toast("Backup no campo acima: copie com Ctrl+C"); };
+      try {
+        navigator.clipboard.writeText(data).then(function () { toast("Backup copiado"); }, fallback);
+      } catch (err) { fallback(); }
+    } else if (a === "restore-backup") {
+      try {
+        var s = JSON.parse(document.getElementById("s-backup").value);
+        if (!s || !Array.isArray(s.vendors)) throw new Error();
+        state = normalize(s); save(); dlg.close(); render(); toast("Backup restaurado");
+      } catch (err) {
+        toast("Backup inválido. Cole o texto completo copiado do outro aparelho.");
+      }
+    }
+  });
+
+  document.addEventListener("change", function (e) {
+    var el = e.target;
+    if (!el.dataset || !el.dataset.toggle) return;
+    var p = el.dataset.toggle.split(":");
+    var x = state[p[0]].filter(function (y) { return y.id === p[1]; })[0];
+    if (!x) return;
+    if (p[0] === "shopping") x.bought = el.checked; else x.done = el.checked;
+    save(); render();
+  });
+
+  render();
+})();
+</script>
+<!-- artifact:end -->
+</body>
+</html>
