@@ -105,6 +105,17 @@ h3 { font-size: 13px; text-transform: uppercase; letter-spacing: .12em; color: v
 .row { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 12px 14px; display: grid; grid-template-columns: auto 1fr auto; gap: 4px 14px; align-items: center; }
 .row.no-check { grid-template-columns: 1fr auto; }
 .row .main { min-width: 0; display: grid; gap: 4px; }
+.row .media { min-width: 0; display: grid; grid-template-columns: 64px 1fr; gap: 14px; align-items: center; }
+.thumb { width: 64px; height: 64px; border-radius: 8px; border: 1px solid var(--line); background: var(--off-soft); padding: 0; cursor: pointer; overflow: hidden; display: grid; place-items: center; color: var(--muted); font-family: var(--display); font-size: 22px; }
+.thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.thumb.empty-thumb { border-style: dashed; font-family: var(--body); font-size: 11px; line-height: 1.2; text-align: center; padding: 4px; }
+.photo-field { display: grid; grid-template-columns: 96px 1fr; gap: 12px; align-items: start; }
+.photo-preview { width: 96px; height: 96px; border-radius: 10px; border: 1px dashed var(--line); background: var(--bg); overflow: hidden; display: grid; place-items: center; color: var(--muted); font-size: 12px; text-align: center; padding: 4px; }
+.photo-preview img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.photo-actions { display: grid; gap: 8px; min-width: 0; }
+.photo-actions .btns { display: flex; flex-wrap: wrap; gap: 8px; }
+.photo-actions input[type=file] { display: none; }
+@media (max-width: 480px) { .row .media { grid-template-columns: 48px 1fr; gap: 10px; } .thumb { width: 48px; height: 48px; } }
 .row .name { font-weight: 700; overflow-wrap: anywhere; }
 .row .meta { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 13px; color: var(--muted); align-items: center; }
 .row .meta a { overflow-wrap: anywhere; }
@@ -299,7 +310,8 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: cente
     };
   }
   function save() {
-    try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {}
+    try { localStorage.setItem(KEY, JSON.stringify(state)); return true; }
+    catch (e) { if (e && e.name === "QuotaExceededError") setTimeout(function () { toast("Sem espaço no navegador. Remova algumas fotos."); }, 50); return false; }
   }
   state = load();
 
@@ -491,15 +503,21 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: cente
       '<button class="btn" type="button" data-action="add:vendors">Adicionar fornecedor</button></div>' +
       filterChips("vendor", ui.vendorFilter, opts) + body + "</section>";
   }
+  function thumb(kind, x) {
+    var src = x.img || "";
+    var ok = /^data:image\//.test(src) || safeUrl(src);
+    return '<button type="button" class="thumb' + (ok ? "" : " empty-thumb") + '" data-edit="' + kind + ":" + x.id + '" aria-label="Foto de ' + esc(x.name) + '">' +
+      (ok ? '<img src="' + esc(src) + '" alt="" loading="lazy">' : "+ foto") + "</button>";
+  }
   function vendorRow(x) {
     var links = (x.links || []).filter(function (l) { return safeUrl(l.url); }).map(function (l) {
       return '<a href="' + esc(l.url) + '" target="_blank" rel="noopener">' + esc(l.label || "Link") + "</a>";
     }).join("");
     return '<div class="row no-check' + (x.status === "descartado" ? " dim" : "") + '">' +
-      '<div class="main"><span class="name">' + esc(x.name) + "</span>" +
+      '<div class="media">' + thumb("vendors", x) + '<div class="main"><span class="name">' + esc(x.name) + "</span>" +
         '<div class="meta">' + links + (x.contact ? "<span>" + esc(x.contact) + "</span>" : "") + "</div>" +
         (x.notes ? '<div class="notes">' + esc(x.notes) + "</div>" : "") +
-      "</div>" +
+      "</div></div>" +
       '<div class="side"><span class="pill ' + esc(x.status) + '">' + label(VENDOR_STATUS, x.status) + "</span>" +
         (num(x.price) ? '<span class="price">' + money(num(x.price)) + "</span>" : "") +
         '<button class="edit" type="button" data-edit="vendors:' + x.id + '">Editar</button></div>' +
@@ -529,10 +547,10 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: cente
     var q = num(i.qty) || 1;
     return '<div class="row' + (i.bought ? " done" : "") + '">' +
       '<input type="checkbox" class="check" aria-label="Comprado" data-toggle="shopping:' + i.id + '"' + (i.bought ? " checked" : "") + ">" +
-      '<div class="main"><span class="name">' + esc(i.name) + "</span>" +
+      '<div class="media">' + thumb("shopping", i) + '<div class="main"><span class="name">' + esc(i.name) + "</span>" +
         '<div class="meta">' + (url ? '<a href="' + esc(url) + '" target="_blank" rel="noopener">Ver na ' + esc(host) + "</a>" : "") +
         "<span>Qtd. " + q + "</span>" + (num(i.price) ? "<span>" + money(num(i.price)) + " cada</span>" : "<span>Sem preço</span>") + "</div>" +
-      "</div>" +
+      "</div></div>" +
       '<div class="side">' + (shopTotal(i) ? '<span class="price">' + money(shopTotal(i)) + "</span>" : "") +
         '<button class="edit" type="button" data-edit="shopping:' + i.id + '">Editar</button></div>' +
     "</div>";
@@ -606,7 +624,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: cente
       html: function (x) {
         var cats = uniq(state.vendors.map(function (v) { return v.cat; }).concat(["Buffet", "Local", "Decoração", "Música / DJ", "Bolo e doces", "Vestido e traje"]));
         var links = (x.links || []).map(function (l) { return (l.label || "Link") + " | " + l.url; }).join("\n");
-        return field("f-name", "Nome", text("f-name", x.name, "required")) +
+        return photoField(x) + field("f-name", "Nome", text("f-name", x.name, "required")) +
           '<div class="two">' + field("f-cat", "Categoria", text("f-cat", x.cat, 'list="cats" required')) + datalist("cats", cats) +
           field("f-status", "Status", select("f-status", x.status, VENDOR_STATUS)) + "</div>" +
           '<div class="two">' + field("f-price", "Valor do orçamento (R$)", text("f-price", x.price, 'type="number" min="0" step="0.01" inputmode="decimal"')) +
@@ -615,7 +633,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: cente
           field("f-notes", "Observações", '<textarea id="f-notes" name="f-notes">' + esc(x.notes) + "</textarea>");
       },
       read: function (x, f) {
-        x.name = f["f-name"].value.trim(); x.cat = f["f-cat"].value.trim(); x.status = f["f-status"].value;
+        x.img = pendingImg; x.name = f["f-name"].value.trim(); x.cat = f["f-cat"].value.trim(); x.status = f["f-status"].value;
         x.price = f["f-price"].value; x.contact = f["f-contact"].value.trim(); x.notes = f["f-notes"].value.trim();
         x.links = f["f-links"].value.split("\n").map(function (line) {
           line = line.trim(); if (!line) return null;
@@ -632,7 +650,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: cente
       blank: function () { return { cat: "", name: "", url: "", qty: 1, price: "", bought: false }; },
       html: function (x) {
         var cats = uniq(state.shopping.map(function (i) { return i.cat; }).concat(["Decoração", "Madrinhas e padrinhos", "Lembrancinhas"]));
-        return field("f-name", "Item", text("f-name", x.name, "required")) +
+        return photoField(x) + field("f-name", "Item", text("f-name", x.name, "required")) +
           field("f-cat", "Categoria", text("f-cat", x.cat, 'list="scats" required')) + datalist("scats", cats) +
           field("f-url", "Link da loja", text("f-url", x.url, 'type="url" placeholder="https://"')) +
           '<div class="two">' + field("f-qty", "Quantidade", text("f-qty", x.qty, 'type="number" min="1" step="1"')) +
@@ -640,7 +658,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: cente
           '<label><input type="checkbox" id="f-bought" name="f-bought" class="check" style="width:18px;height:18px;vertical-align:-3px"' + (x.bought ? " checked" : "") + "> Já comprado</label>";
       },
       read: function (x, f) {
-        x.name = f["f-name"].value.trim(); x.cat = f["f-cat"].value.trim(); x.url = f["f-url"].value.trim();
+        x.img = pendingImg; x.name = f["f-name"].value.trim(); x.cat = f["f-cat"].value.trim(); x.url = f["f-url"].value.trim();
         x.qty = Math.max(1, parseInt(f["f-qty"].value, 10) || 1); x.price = f["f-price"].value; x.bought = f["f-bought"].checked;
       }
     },
@@ -673,6 +691,61 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: cente
   };
 
   var editing = null; // { kind, id }
+  var pendingImg = "";
+
+  function photoField(x) {
+    pendingImg = x.img || "";
+    return '<div class="field"><label for="f-img-url">Foto</label><div class="photo-field">' +
+      '<div class="photo-preview" id="photo-preview"></div>' +
+      '<div class="photo-actions"><div class="btns">' +
+        '<label class="btn ghost" for="f-img-file" style="cursor:pointer">Escolher imagem</label>' +
+        '<input type="file" id="f-img-file" accept="image/*">' +
+        '<button type="button" class="btn ghost" data-action="clear-photo">Remover</button></div>' +
+        text("f-img-url", /^data:/.test(pendingImg) ? "" : pendingImg, 'type="url" placeholder="Ou cole o endereço da imagem (https://...)"') +
+        '<span class="hint" style="margin:0">Dica: copie a foto no site da loja ou do Instagram e cole aqui com Ctrl+V.</span>' +
+      "</div></div></div>";
+  }
+  function showPreview() {
+    var el = document.getElementById("photo-preview");
+    if (!el) return;
+    var ok = /^data:image\//.test(pendingImg) || safeUrl(pendingImg);
+    el.innerHTML = ok ? '<img src="' + esc(pendingImg) + '" alt="Prévia da foto">' : "Sem foto";
+  }
+  // Reduz a imagem para caber no armazenamento do navegador
+  function loadImageFile(file) {
+    if (!file || !/^image\//.test(file.type)) { toast("Escolha um arquivo de imagem"); return; }
+    var url = URL.createObjectURL(file);
+    var im = new Image();
+    im.onload = function () {
+      var max = 480, w = im.naturalWidth, h = im.naturalHeight, k = Math.min(1, max / Math.max(w, h));
+      var c = document.createElement("canvas");
+      c.width = Math.round(w * k); c.height = Math.round(h * k);
+      var ctx = c.getContext("2d");
+      ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, c.width, c.height);
+      ctx.drawImage(im, 0, 0, c.width, c.height);
+      pendingImg = c.toDataURL("image/jpeg", 0.82);
+      URL.revokeObjectURL(url);
+      var u = document.getElementById("f-img-url"); if (u) u.value = "";
+      showPreview();
+    };
+    im.onerror = function () { URL.revokeObjectURL(url); toast("Não foi possível abrir essa imagem"); };
+    im.src = url;
+  }
+  form.addEventListener("change", function (e) {
+    if (e.target.id === "f-img-file") loadImageFile(e.target.files[0]);
+  });
+  form.addEventListener("input", function (e) {
+    if (e.target.id === "f-img-url") { pendingImg = e.target.value.trim(); showPreview(); }
+  });
+  dlg.addEventListener("paste", function (e) {
+    if (!document.getElementById("photo-preview")) return;
+    var items = (e.clipboardData && e.clipboardData.items) || [];
+    for (var i = 0; i < items.length; i++) {
+      if (items[i].kind === "file" && /^image\//.test(items[i].type)) {
+        e.preventDefault(); loadImageFile(items[i].getAsFile()); return;
+      }
+    }
+  });
 
   function openEditor(kind, id) {
     var spec = FORMS[kind];
@@ -686,7 +759,8 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: cente
         '<button type="submit" class="btn" value="save">Salvar</button></div>' +
       "</div>";
     dlg.showModal();
-    var first = form.querySelector("input, select, textarea");
+    showPreview();
+    var first = form.querySelector("#f-name, #f-text, input, select, textarea");
     if (first) first.focus();
   }
 
@@ -751,6 +825,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: cente
     if (a === "settings") openSettings();
     else if (a.indexOf("add:") === 0) openEditor(a.slice(4));
     else if (a === "close") dlg.close();
+    else if (a === "clear-photo") { pendingImg = ""; var u = document.getElementById("f-img-url"); if (u) u.value = ""; showPreview(); }
     else if (a === "delete" || a === "reset") {
       if (!el.classList.contains("armed")) {
         el.classList.add("armed");
